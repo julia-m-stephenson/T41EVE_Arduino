@@ -81,6 +81,7 @@ void EVE_Display::initialize()
   switchMatrixCalStatic_cmd_list();
   transmitterStatic_cmd_list();
 #else
+  receiverStatic_cmd_list();// We always start in RX mode??
   /* JMS only one command list? 
   receiverStatic_cmd_list();
   directEntryStatic_cmd_list();
