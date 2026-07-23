@@ -53,7 +53,7 @@ You should have received a copy of the GNU General Public License along with T41
 #include "MyConfigurationFile.h"
 
 // #include <Bridgetek_EVE4.h>
-#include "EVE.h"
+#include <EVE.h>
 
 // Constants and #defines first:
 //======================================== Symbolic Constants for the T41 ===================================================

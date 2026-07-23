@@ -81,8 +81,8 @@ void EVE_Display::initialize()
   switchMatrixCalStatic_cmd_list();
   transmitterStatic_cmd_list();
 #else
-  receiverStatic_cmd_list();
   /* JMS only one command list? 
+  receiverStatic_cmd_list();
   directEntryStatic_cmd_list();
   buttonEntryStatic_cmd_list();
   encoderEntryStatic_cmd_list();
@@ -1309,7 +1309,7 @@ void EVE_Display::drawEncoderEntryScreen(bool typeFloat)
 #if EVE_GEN > 4
         EVE_cmd_calllist_burst(15000); /* insert static part of display-list from copy in gfx-mem */
 #else
-        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
 #endif
   // Show the parameter name.
   EVE_cmd_text_burst(200, 40, 30, 0, button.buttonParameterName.c_str());
@@ -1660,7 +1660,7 @@ void EVE_Display::drawTransmitterCalScreen(int16_t *fftArray)
 #if EVE_GEN > 4
         EVE_cmd_calllist_burst(20000); /* insert static part of display-list from copy in gfx-mem */
 #else
-        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
 #endif
 
   // Draw the calibration type and calibration mode.
@@ -1944,7 +1944,7 @@ void EVE_Display::drawReceiverCalScreen(int16_t *fftArray)
 #if EVE_GEN > 4
         EVE_cmd_calllist_burst(50000); /* insert static part of display-list from copy in gfx-mem */
 #else
-        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
 #endif
 
   // Draw the calibration type and calibration mode.
@@ -2070,7 +2070,7 @@ void EVE_Display::drawEqualizerAdjustScreen(int EQType)
 #if EVE_GEN > 4
         EVE_cmd_calllist_burst(60000); /* insert static part of display-list from copy in gfx-mem */
 #else
-        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
 #endif
   EVE_color_rgb_burst(0x00FF00); // Green
   if (EQType == 0)
@@ -2300,7 +2300,7 @@ void EVE_Display::drawSwitchMatrixCalScreen()
 #if EVE_GEN > 4
         EVE_cmd_calllist_burst(70000); /* insert static part of display-list from copy in gfx-mem */
 #else
-        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
 #endif
 
   // Characters over the top of the points.
@@ -2557,7 +2557,7 @@ void EVE_Display::drawTransmitterScreen()
 #if EVE_GEN > 4
         EVE_cmd_calllist_burst(80000); /* insert static part of display-list from copy in gfx-mem */
 #else
-        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
 #endif
 
   // Main frequency, VFO A and VFO B.  Should skip this and simply show TxRxFreq???
@@ -2748,7 +2748,53 @@ FLASHMEM void EVE_Display::drawTransmitterAlarmScreen(std::string warningMessage
   while (EVE_busy())
     ;
 }
+// Load up static data for required screen 
+void EVE_Display::loadStaticScreenData(EVE_Display::Screens required){
+  // Screen selector.
+  switch (required)
+  {
+  case EVE_Display::Screens::receiver:
+      Serial.println("receiverStatic_cmd_list"); 
+      receiverStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::directEntry:
+      directEntryStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::buttonEntry:
+      buttonEntryStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::encoderEntry:
+    encoderEntryStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::transmitCal:
+    transmitterCalStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::receiveCal:
+    receiverCalStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::carrierCal:
+  #warning is this needed?
+    break;
+  case EVE_Display::Screens::equalizerAdjust:
+    equalizerAdjustStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::switchmatrixCal:
+    switchMatrixCalStatic_cmd_list();
+    break;
+  case EVE_Display::Screens::transmitter:
+    Serial.println("transmitterStatic_cmd_list"); 
+	transmitterStatic_cmd_list();
+    break;
 
+  default:
+    break;
+  }
+	
+}
+
+  
+  
+  
 void EVE_Display::Example1() {
 EVE_cmd_dl(CMD_DLSTART); // tells EVE to start a new display-list
 delay(1);

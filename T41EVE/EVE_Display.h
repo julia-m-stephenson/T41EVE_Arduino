@@ -57,7 +57,13 @@ encoderEntry,
 transmitCal,
 receiveCal,
 carrierCal,
+#if EVE_GEN > 4
 equalizerAdjust
+#else
+equalizerAdjust,
+switchmatrixCal, // needed to select static screen data
+transmitter// needed to select static screen data
+#endif
   };
 
 Screens screenSelect{Screens::receiver};
@@ -109,6 +115,10 @@ void switchMatrixCalStatic_cmd_list();
 
 void drawTransmitterAlarmScreen(std::string warningMessage);
 
+#if EVE_GEN > 4
+#else
+void loadStaticScreenData(EVE_Display::Screens required);// EVE3 only supports 1 lot of static data
+#endif
 void Example1();
 void Example2();
 
