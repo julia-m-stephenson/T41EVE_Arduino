@@ -25,7 +25,13 @@ You should have received a copy of the GNU General Public License along with T41
 
 
 #include "SDT.h"
+#if EVE_GEN > 4
+// no changes
+#else // EVE3 doesn't support multiple static areas
+#define MEM_DL_STATIC (EVE_RAM_G_SIZE - 4096) /* 0xff000 - start-address of the static part of the display-list, upper 4k of gfx-mem */
 
+uint32_t num_dl_static = 0; /* amount of bytes in the static part of our display-list */
+#endif
 // Constructor.
 EVE_Display::EVE_Display()
 {
@@ -63,7 +69,7 @@ void EVE_Display::initialize()
     tft_active = 1;
     EVE_memWrite32(REG_PWM_DUTY, 0x30); /* setup backlight, range is from 0 = off to 0x80 = max */
   }
-
+#if EVE_GEN > 4
   // Load RAM_G with static command lists.
   receiverStatic_cmd_list();
   directEntryStatic_cmd_list();
@@ -74,7 +80,19 @@ void EVE_Display::initialize()
   equalizerAdjustStatic_cmd_list();
   switchMatrixCalStatic_cmd_list();
   transmitterStatic_cmd_list();
-
+#else
+  receiverStatic_cmd_list();
+  /* JMS only one command list? 
+  directEntryStatic_cmd_list();
+  buttonEntryStatic_cmd_list();
+  encoderEntryStatic_cmd_list();
+  transmitterCalStatic_cmd_list();
+  receiverCalStatic_cmd_list();
+  equalizerAdjustStatic_cmd_list();
+  switchMatrixCalStatic_cmd_list();
+  transmitterStatic_cmd_list();
+*/
+#endif
   SPI.endTransaction();
   SPI.beginTransaction(SPISettings(12UL * 1000000UL, MSBFIRST, SPI_MODE0));
 }
@@ -86,7 +104,11 @@ FLASHMEM void EVE_Display::drawSplash()
   EVE_cmd_dl(DL_CLEAR_COLOR_RGB | 0xFFFFFF);
   EVE_cmd_dl(DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG);
   EVE_color_rgb(0x000000);
+#if EVE_GEN > 4
   EVE_cmd_text(200, 100, 31, 0, "T41-3 TRANSCEIVER");
+#else
+  EVE_cmd_text(200, 100, 31, 0, "T41-3-JMS TRANSCEIVER");
+#endif
   EVE_cmd_text(100, 150, 31, 0, "T41 EXPERIMENTAL PLATFORM");
   EVE_cmd_text(250, 250, 30, 0, "by Greg Raven KF5N");
   EVE_cmd_text(230, 300, 30, 0, "based on the T41-EP by");
@@ -119,7 +141,11 @@ void EVE_Display::drawReceiverScreen(int16_t *fftArray, uint8_t *waterfall, int1
   EVE_point_size_burst(32);
 
   // Static items.
-  EVE_cmd_calllist_burst(0);
+#if EVE_GEN > 4
+         EVE_cmd_calllist_burst(0); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
 
   // Show top menu.
   if (evemenucontrol.top)
@@ -768,7 +794,12 @@ void EVE_Display::drawReceiverScreen(int16_t *fftArray, uint8_t *waterfall, int1
 // Static items in receiver display.
 FLASHMEM void EVE_Display::receiverStatic_cmd_list()
 {
-  EVE_cmd_newlist(0);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(0); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
+
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -948,7 +979,15 @@ FLASHMEM void EVE_Display::receiverStatic_cmd_list()
   EVE_color_rgb(0xff0000);
   EVE_cmd_text(450, 80, 26, 0, "Watts");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End of receiver static.
 
 // This needs to generate 2 x variables.  The left x coordinate of the tuning bar, and the right x coordinate.
@@ -1081,7 +1120,11 @@ void EVE_Display::ComputeBandWidthIndicatorBar() // AFP 10-30-22
 // Static items in Direct Frequency Entry screen.
 FLASHMEM void EVE_Display::directEntryStatic_cmd_list()
 {
-  EVE_cmd_newlist(5000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(5000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -1175,7 +1218,15 @@ FLASHMEM void EVE_Display::directEntryStatic_cmd_list()
   EVE_cmd_text(linex, line1y + 110, 28, 0, "D Delete last digit");
   EVE_cmd_text(linex, line1y + 140, 28, 0, "S Save direct to last frequency");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End direct entry static list.
 
 // Direct Entry screen (dynamic).
@@ -1189,7 +1240,11 @@ void EVE_Display::drawDirectEntryScreen()
   EVE_point_size_burst(32);
 
   // Static items.
-  EVE_cmd_calllist_burst(5000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(5000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
   // Show the entered frequency.
   EVE_cmd_text(500, 5, 30, 0, button.freqString.c_str());
 
@@ -1223,7 +1278,11 @@ void EVE_Display::drawButtonEntryScreen()
   EVE_point_size_burst(32);
 
   // Static items.
-  EVE_cmd_calllist_burst(10000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(10000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
   // Show the parameter name.
   EVE_cmd_text(250, 40, 30, 0, button.buttonParameterName.c_str());
   // Show the parameter.
@@ -1247,7 +1306,11 @@ void EVE_Display::drawEncoderEntryScreen(bool typeFloat)
   EVE_point_size_burst(32);
 
   // Static items.
-  EVE_cmd_calllist_burst(15000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(15000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
   // Show the parameter name.
   EVE_cmd_text_burst(200, 40, 30, 0, button.buttonParameterName.c_str());
   // Show the parameter value.
@@ -1270,7 +1333,11 @@ void EVE_Display::drawEncoderEntryScreen(bool typeFloat)
 FLASHMEM void EVE_Display::buttonEntryStatic_cmd_list()
 {
 
-  EVE_cmd_newlist(10000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(10000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -1376,14 +1443,26 @@ FLASHMEM void EVE_Display::buttonEntryStatic_cmd_list()
 
 //  EVE_cmd_text(578, 182, 31, 0, "^");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End button entry static list.
 
 // Static items in button parameter entry.
 FLASHMEM void EVE_Display::encoderEntryStatic_cmd_list()
 {
 
-  EVE_cmd_newlist(15000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(15000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -1458,7 +1537,15 @@ FLASHMEM void EVE_Display::encoderEntryStatic_cmd_list()
   EVE_cmd_text(linex, line1y + 110, 29, 0, "< Apply entry");
 //  EVE_cmd_text(linex, line1y + 140, 29, 0, "X Exit no change");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End static items in button parameter entry.
 
 // This function writes the waterfall array from the Teensy to RAM_G in the display module.
@@ -1492,7 +1579,11 @@ void EVE_Display::moveBitmapCells()
 // Static items in transmit and carrier calibration screen.
 FLASHMEM void EVE_Display::transmitterCalStatic_cmd_list()
 {
-  EVE_cmd_newlist(20000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(20000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -1540,7 +1631,15 @@ FLASHMEM void EVE_Display::transmitterCalStatic_cmd_list()
   EVE_cmd_text(550, 245, 28, 0, "Zoom: Auto-Cal");
   EVE_cmd_text(550, 275, 28, 0, "Filter: Refine-Cal");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End of transmit/carrier calibration static.
 
 // Transmitter calibration screen (dynamic);
@@ -1558,7 +1657,11 @@ void EVE_Display::drawTransmitterCalScreen(int16_t *fftArray)
   EVE_point_size_burst(32);
 
   // Static items.
-  EVE_cmd_calllist_burst(20000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(20000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
 
   // Draw the calibration type and calibration mode.
   int textX{0};
@@ -1760,7 +1863,11 @@ void EVE_Display::drawTransmitterCalScreen(int16_t *fftArray)
 // Static items in receiver calibration screen.
 FLASHMEM void EVE_Display::receiverCalStatic_cmd_list()
 {
-  EVE_cmd_newlist(50000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(50000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -1808,7 +1915,15 @@ FLASHMEM void EVE_Display::receiverCalStatic_cmd_list()
   EVE_cmd_text(550, 245, 28, 0, "Zoom: Auto-Cal");
   EVE_cmd_text(550, 275, 28, 0, "Filter: Refine-Cal");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End of receiver calibration static.
 
 // Receiver calibration screen (dynamic);
@@ -1826,7 +1941,11 @@ void EVE_Display::drawReceiverCalScreen(int16_t *fftArray)
   EVE_point_size_burst(32);
 
   // Static items.
-  EVE_cmd_calllist_burst(50000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(50000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
 
   // Draw the calibration type and calibration mode.
   EVE_color_rgb(0xff0000);
@@ -1948,7 +2067,11 @@ void EVE_Display::drawEqualizerAdjustScreen(int EQType)
   EVE_cmd_dl_burst(DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG);
   EVE_vertex_format_burst(0);
 
-  EVE_cmd_calllist_burst(60000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(60000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
   EVE_color_rgb_burst(0x00FF00); // Green
   if (EQType == 0)
     EVE_cmd_text_burst(130, 5, 30, 0, "Receive Equalizer (Nominal value is 100)");
@@ -1998,7 +2121,11 @@ void EVE_Display::drawEqualizerAdjustScreen(int EQType)
 
 FLASHMEM void EVE_Display::equalizerAdjustStatic_cmd_list()
 {
-  EVE_cmd_newlist(60000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(60000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -2027,7 +2154,15 @@ FLASHMEM void EVE_Display::equalizerAdjustStatic_cmd_list()
   EVE_cmd_text(755, 409, 27, 0, "Hz");
   EVE_cmd_text(755, 440, 27, 0, "dB");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 }
 
 // Static items in Switch Matrix Calibration screen.
@@ -2052,7 +2187,11 @@ FLASHMEM void EVE_Display::switchMatrixCalStatic_cmd_list()
       "RESET TUNING",
       "UNUSED 1",
       "BEARING"};
-  EVE_cmd_newlist(70000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(70000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -2115,7 +2254,15 @@ FLASHMEM void EVE_Display::switchMatrixCalStatic_cmd_list()
   EVE_color_rgb(0xff0000);
   EVE_cmd_text(linex, line1y + 30, 28, 0, "Push buttons\nin ascending\norder.");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End switch matrix cal static list.
 
 
@@ -2150,7 +2297,11 @@ void EVE_Display::drawSwitchMatrixCalScreen()
   EVE_point_size(32);
 
   // Static items.
-  EVE_cmd_calllist(70000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(70000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
 
   // Characters over the top of the points.
   uint32_t xOrigin = 300;
@@ -2194,7 +2345,11 @@ void EVE_Display::drawSwitchMatrixCalScreen()
 // Static items in receiver display.
 FLASHMEM void EVE_Display::transmitterStatic_cmd_list()
 {
-  EVE_cmd_newlist(80000);
+#if EVE_GEN > 4
+    EVE_cmd_newlist(80000); 
+#else
+    EVE_cmd_dlstart(); /* Start the display list */
+#endif
   EVE_vertex_format(0);
   EVE_line_width(16);
 
@@ -2374,7 +2529,15 @@ FLASHMEM void EVE_Display::transmitterStatic_cmd_list()
   EVE_color_rgb(0xff0000);
   EVE_cmd_text(450, 80, 26, 0, "Watts");
 
-  EVE_cmd_endlist();
+#if EVE_GEN > 4
+    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
+#else
+    EVE_execute_cmd();
+    num_dl_static = EVE_memRead16(REG_CMD_DL);
+    EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
+    EVE_execute_cmd();
+#endif
+
 } // End of transmitter static.
 
 // Primary transmitter screen (dynamic);
@@ -2391,7 +2554,11 @@ void EVE_Display::drawTransmitterScreen()
   EVE_point_size_burst(32);
 
   // Static items.
-  EVE_cmd_calllist_burst(80000);
+#if EVE_GEN > 4
+        EVE_cmd_calllist_burst(80000); /* insert static part of display-list from copy in gfx-mem */
+#else
+        EVE_cmd_append_burst(0, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
+#endif
 
   // Main frequency, VFO A and VFO B.  Should skip this and simply show TxRxFreq???
   if (ConfigData.activeVFO == VFO_A)
