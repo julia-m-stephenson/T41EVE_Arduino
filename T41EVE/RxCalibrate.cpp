@@ -183,7 +183,6 @@ void RxCalibrate::CalibrateEpilogue(bool radioCal, bool saveToEeprom) {
   ConfigData.spectrum_zoom = userZoomIndex;
   button.ButtonZoom();                      // Restore the user's zoom setting.
   powerUp = true;  // Clip off transient.
-
 }
 
 
