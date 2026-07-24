@@ -503,7 +503,9 @@ void SaveAnalogSwitchValues() {
   CalData.buttonRepeatDelay = 0;
 #if EVE_GEN > 4
 #else
+delay(5000);// try a delay to give background time to be displayed
   evedisplay.loadStaticScreenData(EVE_Display::Screens::switchmatrixCal);
+delay(5000);
 #endif
   // Show the initial Switch Matrix calibration screen.
   evedisplay.drawSwitchMatrixCalScreen();

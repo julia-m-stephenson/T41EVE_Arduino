@@ -32,7 +32,7 @@ const char RIGNAME[] = "T41-EP SDT";
 const int RIGNAME_X_OFFSET = 570;  // Pixel count to rig name field.
 //#define DEBUG 		                                                    // Uncommented for debugging, comment out for normal use
 //#define TEMP_AND_LOAD                                                     // Uncomment to see temperature and load information.
-//#define DEBUG_SWITCH_CAL                                                  // Uncomment to run switch cal by pushing and holding a button at power-up.
+#define DEBUG_SWITCH_CAL                                                  // Uncomment to run switch cal by pushing and holding a button at power-up.
 // Debug switch cal must be disabled for normal radio operation!
 //#define DEBUG_CESSB                                                       // Uncomment to get CESSB operating parameters printed to the serial monitor.
 //#define LOOP_TIMER
@@ -48,8 +48,8 @@ const int RIGNAME_X_OFFSET = 570;  // Pixel count to rig name field.
 #define TIME_24H 1
 //DB2OO, 29-AUG-23: ITU_REGION to determine band borders: Upper band limits on 80m (3.8MHz vs 4.0MhHz) and 40m (7.2MHz vs. 7.3MHz)
 // A good reference table here:  https://www.arrl.org/frequency-bands
-//#define ITU_REGION 1                //for Europe
-#define ITU_REGION 2  // for USA
+#define ITU_REGION 1                //for Europe
+//#define ITU_REGION 2  // for USA
 //#define ITU_REGION 3                // Asia/Oceania
 // DB2OO, 29.823:. Analog Signal on this pin will be used for an analog S-Meter (250uA full scale) connected via 10kOhm to this output. 1uF capacitor paralle to the S-Meter. --> Display.cpp.
 // This might conflict with other hardware modifications, that might use Pin 33 for a different purpose --> please check, before defining this
@@ -78,22 +78,23 @@ constexpr uint32_t RAY_LENGTH = 190;
 
 // Customizable definitions for center and fine tune defaults and increments.  Larry K3PTO June 24, 2024
 constexpr uint32_t CENTER_TUNE_DEFAULT = 1000;  // Set to the desired default in the CENTER_TUNE_ARRAY.
-#define CENTER_TUNE_ARRAY { 1000, 10000, 100000, 1000000 }  // The number of elements is not fixed.
+//#define CENTER_TUNE_ARRAY { 500,1000, 10000, 100000, 1000000 }  // The number of elements is not fixed.
+#define CENTER_TUNE_ARRAY { 1000, 10000 }  // The number of elements is not fixed.
 constexpr uint32_t FINE_TUNE_DEFAULT = 50;  // Set to the desired default in the FINE_TUNE_ARRAY.
-#define FINE_TUNE_ARRAY { 10, 20, 50, 100, 200, 500 }  // The number of elements is not fixed.
+#define FINE_TUNE_ARRAY { 10, 100, 500 }  // The number of elements is not fixed.
 
 // Use this for external amp with mute LOW, unmute HIGH.
-#define UNMUTEAUDIO HIGH
-#define MUTEAUDIO LOW
+//#define UNMUTEAUDIO HIGH
+//#define MUTEAUDIO LOW
 // Use this for external amp with mute HIGH, unmute LOW.
-//#define UNMUTEAUDIO LOW
-//#define MUTEAUDIO   HIGH
+#define UNMUTEAUDIO LOW
+#define MUTEAUDIO   HIGH
 
 // The audio amplifier gain may need to be adjusted for the best volume range.
-constexpr float32_t SPEAKERSCALE = 2.0;   // Increase or decrease this value depending on your amplifier gain.
+constexpr float32_t SPEAKERSCALE = 8.0;   // Increase or decrease this value depending on your amplifier gain.
 constexpr float32_t HEADPHONESCALE = 8.0;  // Same as for the speaker.  Adjust to your preference for volume range.
 
-constexpr float32_t RFGAINSCALE = 1000.0;  // This adjusts for RF gain differences in the QSD2.
+constexpr float32_t RFGAINSCALE = 3000.0;  // This adjusts for RF gain differences in the QSD.  QSD should use a value of 3000.  QSD2 should use a value of 1000.0.
 
 constexpr float32_t FREQUENCYCAL = 100000;  // The nominal frequency calibration.  This can be set here permanently
                                             // after determining the unique value for your radio.
