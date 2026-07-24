@@ -1001,8 +1001,8 @@ FLASHMEM void setup()
 
   //  Entry graphics.
   evedisplay.drawSplash();
-  delay(5000);
-
+//  delay(5000);
+  delay(500);
   // Switch matrix debug code.
   // Push and hold a button at power up to activate switch matrix calibration.
   // Please note that switch matrix calibration is also available in the Calibration menu.
@@ -1018,7 +1018,7 @@ FLASHMEM void setup()
   } // KD0RC end
 #else
   button.EnableButtonInterrupts();
-  //eeprom.EEPROMStartup();// JMS just to see where we go
+  eeprom.EEPROMStartup();
 #endif
 
   // GPIOs should be configured at this point.  Make sure transmitter is disabled.
@@ -1278,18 +1278,18 @@ void loop()
 			}
 			break;
 			
-		case RadioState::CW_CALIBRATE_STATE:
+/* 		case RadioState::CW_CALIBRATE_STATE:
 		case RadioState::SSB_CALIBRATE_STATE:
 			if(lastState!=RadioState::SSB_CALIBRATE_STATE && lastState!=RadioState::CW_CALIBRATE_STATE){
 				evedisplay.loadStaticScreenData(EVE_Display::Screens::transmitCal);
 			}
 			break;
-		case RadioState::RECEIVE_CALIBRATE_STATE:
+ *//* 		case RadioState::RECEIVE_CALIBRATE_STATE:
 			if(lastState!=RadioState::RECEIVE_CALIBRATE_STATE){
 				evedisplay.loadStaticScreenData(EVE_Display::Screens::receiveCal);
 			}
 			break;
-		default:
+ */		default:
 			break;
 	}
 #endif

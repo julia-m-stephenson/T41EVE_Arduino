@@ -501,7 +501,10 @@ void SaveAnalogSwitchValues() {
   // Disable button repeat for interrupt driven buttons
   origRepeatDelay = CalData.buttonRepeatDelay;
   CalData.buttonRepeatDelay = 0;
-
+#if EVE_GEN > 4
+#else
+  evedisplay.loadStaticScreenData(EVE_Display::Screens::switchmatrixCal);
+#endif
   // Show the initial Switch Matrix calibration screen.
   evedisplay.drawSwitchMatrixCalScreen();
 
@@ -553,6 +556,10 @@ void SaveAnalogSwitchValues() {
   // Set buttonFinished[] to false in case calibration is run again.
   for(uint32_t i = 0; i < 18; i = i + 1) buttonFinished[i] = false;
   delay(5000);  // Delay before exiting so user can see the last value.
+#if EVE_GEN > 4
+#else
+  evedisplay.loadStaticScreenData(EVE_Display::Screens::receiver);
+#endif
 }
 
 

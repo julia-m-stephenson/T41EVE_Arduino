@@ -28,8 +28,8 @@ You should have received a copy of the GNU General Public License along with T41
 #if EVE_GEN > 4
 // no changes
 #else // EVE3 doesn't support multiple static areas
-#define MEM_DL_STATIC (EVE_RAM_G_SIZE - 4096) /* 0xff000 - start-address of the static part of the display-list, upper 4k of gfx-mem */
-
+#define MEM_DL_SIZE (4096)
+#define MEM_DL_STATIC (EVE_RAM_G_SIZE - MEM_DL_SIZE) /* 0xff000 - start-address of the static part of the display-list, upper 4k of gfx-mem */
 uint32_t num_dl_static = 0; /* amount of bytes in the static part of our display-list */
 #endif
 // Constructor.
@@ -81,6 +81,7 @@ void EVE_Display::initialize()
   switchMatrixCalStatic_cmd_list();
   transmitterStatic_cmd_list();
 #else
+//  switchMatrixCalStatic_cmd_list();
   receiverStatic_cmd_list();// We always start in RX mode??
   /* JMS only one command list? 
   receiverStatic_cmd_list();
@@ -983,10 +984,12 @@ FLASHMEM void EVE_Display::receiverStatic_cmd_list()
 #if EVE_GEN > 4
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
-    EVE_execute_cmd();
+    EVE_execute_cmd();// Wait whilst FIFO is busy
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
-    EVE_execute_cmd();
+    EVE_execute_cmd();// Wait whilst FIFO is busy
 #endif
 
 } // End of receiver static.
@@ -1223,6 +1226,8 @@ FLASHMEM void EVE_Display::directEntryStatic_cmd_list()
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
     EVE_execute_cmd();
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
@@ -1448,6 +1453,8 @@ FLASHMEM void EVE_Display::buttonEntryStatic_cmd_list()
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
     EVE_execute_cmd();
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
@@ -1542,6 +1549,8 @@ FLASHMEM void EVE_Display::encoderEntryStatic_cmd_list()
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
     EVE_execute_cmd();
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
@@ -1636,6 +1645,8 @@ FLASHMEM void EVE_Display::transmitterCalStatic_cmd_list()
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
     EVE_execute_cmd();
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
@@ -1920,6 +1931,8 @@ FLASHMEM void EVE_Display::receiverCalStatic_cmd_list()
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
     EVE_execute_cmd();
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
@@ -2159,6 +2172,8 @@ FLASHMEM void EVE_Display::equalizerAdjustStatic_cmd_list()
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
     EVE_execute_cmd();
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
@@ -2259,6 +2274,8 @@ FLASHMEM void EVE_Display::switchMatrixCalStatic_cmd_list()
     EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
 #else
     EVE_execute_cmd();
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
@@ -2291,11 +2308,12 @@ void EVE_Display::drawReleaseButtonScreen()
 // Switch Matric calibration (dynamic).
 void EVE_Display::drawSwitchMatrixCalScreen()
 {
-  EVE_cmd_dl(CMD_DLSTART);
-  EVE_cmd_dl(DL_CLEAR_COLOR_RGB | 0x000000);
-  EVE_cmd_dl(DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG);
-  EVE_vertex_format(0);
-  EVE_point_size(32);
+  EVE_start_cmd_burst();
+  EVE_cmd_dl_burst(CMD_DLSTART);
+  EVE_cmd_dl_burst(DL_CLEAR_COLOR_RGB | 0x000000);
+  EVE_cmd_dl_burst(DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG);
+  EVE_vertex_format_burst(0);
+  EVE_point_size_burst(32);
 
   // Static items.
 #if EVE_GEN > 4
@@ -2303,7 +2321,17 @@ void EVE_Display::drawSwitchMatrixCalScreen()
 #else
         EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
 #endif
-
+  EVE_display_burst(); /* mark the end of the display list */
+  EVE_cmd_swap_burst(); /* make this list active */
+  EVE_end_cmd_burst(); /* stop writing to the cmd-fifo, the cmd-FIFO will be executed automatically after this or when DMA is done */
+  while (EVE_busy())
+    ;
+  // displayed background in burst mode now do slow mode
+  EVE_cmd_dl(CMD_DLSTART);
+  EVE_cmd_dl(DL_CLEAR_COLOR_RGB | 0x000000);
+  EVE_cmd_dl(DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG);
+  EVE_vertex_format(0);
+  EVE_point_size(32);
   // Characters over the top of the points.
   uint32_t xOrigin = 300;
   uint32_t yOrigin = 60;
@@ -2535,6 +2563,8 @@ FLASHMEM void EVE_Display::transmitterStatic_cmd_list()
 #else
     EVE_execute_cmd();
     num_dl_static = EVE_memRead16(REG_CMD_DL);
+	EVE_cmd_memzero(MEM_DL_STATIC,MEM_DL_SIZE);// clear the memory
+    EVE_execute_cmd();// Wait whilst FIFO is busy
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
 #endif
@@ -2759,32 +2789,39 @@ void EVE_Display::loadStaticScreenData(EVE_Display::Screens required){
       receiverStatic_cmd_list();
     break;
   case EVE_Display::Screens::directEntry:
+      Serial.println("directEntryStatic_cmd_list"); 
       directEntryStatic_cmd_list();
     break;
   case EVE_Display::Screens::buttonEntry:
+      Serial.println("buttonEntryStatic_cmd_list"); 
       buttonEntryStatic_cmd_list();
     break;
   case EVE_Display::Screens::encoderEntry:
-    encoderEntryStatic_cmd_list();
+      Serial.println("encoderEntryStatic_cmd_list"); 
+      encoderEntryStatic_cmd_list();
     break;
   case EVE_Display::Screens::transmitCal:
-    transmitterCalStatic_cmd_list();
+      Serial.println("transmitterCalStatic_cmd_list"); 
+      transmitterCalStatic_cmd_list();
     break;
   case EVE_Display::Screens::receiveCal:
-    receiverCalStatic_cmd_list();
+      Serial.println("receiverCalStatic_cmd_list"); 
+      receiverCalStatic_cmd_list();
     break;
   case EVE_Display::Screens::carrierCal:
   #warning is this needed?
     break;
   case EVE_Display::Screens::equalizerAdjust:
-    equalizerAdjustStatic_cmd_list();
+      Serial.println("equalizerAdjustStatic_cmd_list"); 
+      equalizerAdjustStatic_cmd_list();
     break;
   case EVE_Display::Screens::switchmatrixCal:
-    switchMatrixCalStatic_cmd_list();
+      Serial.println("switchMatrixCalStatic_cmd_list"); 
+      switchMatrixCalStatic_cmd_list();
     break;
   case EVE_Display::Screens::transmitter:
-    Serial.println("transmitterStatic_cmd_list"); 
-	transmitterStatic_cmd_list();
+      Serial.println("transmitterStatic_cmd_list"); 
+	  transmitterStatic_cmd_list();
     break;
 
   default:

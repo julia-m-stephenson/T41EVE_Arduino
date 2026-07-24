@@ -112,6 +112,11 @@ void TxCalibrate::CalibratePreamble(int setZoom) {
   digitalWrite(MUTE, MUTEAUDIO);  // Mute Audio.
   digitalWrite(RXTX, HIGH);       // Turn on transmitter.
   rawSpectrumPeak = 0;
+#if EVE_GEN > 4
+#else
+  // setup static display data
+  evedisplay.loadStaticScreenData(EVE_Display::Screens::transmitCal);// Setup display static data
+#endif
   if (mode == 0) radioState = RadioState::CW_CALIBRATE_STATE;
   if (mode == 1) radioState = RadioState::SSB_CALIBRATE_STATE;
   SetAudioOperatingState(radioState);  // Do this last!  This turns the queues on.
@@ -142,6 +147,11 @@ void TxCalibrate::CalibrateEpilogue() {
 
   digitalWrite(RXTX, LOW);  // Turn off the transmitter.
   updateDisplayFlag = false;
+#if EVE_GEN > 4
+#else
+  // setup static display data
+  evedisplay.loadStaticScreenData(EVE_Display::Screens::receiver);// Setup display static data
+#endif
   SampleRate = SAMPLE_RATE_192K;  // Return to receiver sample rate.
   SetI2SFreq(SR[SampleRate].rate);
   InitializeDataArrays();  // Re-initialize the filters back to 192ksps.
@@ -165,6 +175,7 @@ void TxCalibrate::CalibrateEpilogue() {
   ConfigData.spectrum_zoom = userZoomIndex;
   button.ButtonZoom();                                   // Restore the user's zoom setting.  Note that this function also modifies ConfigData.spectrum_zoom.
   powerUp = true;
+
 }
 
 
