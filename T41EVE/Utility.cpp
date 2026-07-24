@@ -501,7 +501,7 @@ void SaveAnalogSwitchValues() {
   // Disable button repeat for interrupt driven buttons
   origRepeatDelay = CalData.buttonRepeatDelay;
   CalData.buttonRepeatDelay = 0;
-  
+
   // Show the initial Switch Matrix calibration screen.
   evedisplay.drawSwitchMatrixCalScreen();
 
