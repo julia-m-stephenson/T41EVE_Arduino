@@ -28,7 +28,7 @@ You should have received a copy of the GNU General Public License along with T41
 #if EVE_GEN > 4
 // no changes
 #else // EVE3 doesn't support multiple static areas
-#define MEM_DL_SIZE (4096*10) // Reserve 4Kbytes for each set of static data Max is currently 2536
+#define MEM_DL_SIZE (4096*10) // Reserve 4Kbytes for each set of static data, Max used by any is is currently 2536Bytes
 #define MEM_DL_STATIC ((EVE_RAM_G_SIZE) - (MEM_DL_SIZE)) /* 0xf6000 - start-address of the static part of the display-list, upper 4k of gfx-mem */
 uint32_t rx_num_dl_static = 0; /* amount of bytes in the static part of our display-list */
 uint32_t de_num_dl_static = 0; /* amount of bytes in the static part of our display-list */
