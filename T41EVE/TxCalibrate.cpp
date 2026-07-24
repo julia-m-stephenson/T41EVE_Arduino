@@ -165,7 +165,6 @@ void TxCalibrate::CalibrateEpilogue() {
   ConfigData.spectrum_zoom = userZoomIndex;
   button.ButtonZoom();                                   // Restore the user's zoom setting.  Note that this function also modifies ConfigData.spectrum_zoom.
   powerUp = true;
-
 }
 
 
