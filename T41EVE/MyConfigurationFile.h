@@ -75,7 +75,7 @@ constexpr uint32_t CENTER_SCREEN_Y = 245;
 constexpr uint32_t IMAGE_CORNER_X = 190;  // ImageWidth = 378 Therefore 800 - 378 = 422 / 2 = 211
 constexpr uint32_t IMAGE_CORNER_Y = 40;   // ImageHeight = 302 Therefore 480 - 302 = 178 / 2 = 89
 constexpr uint32_t RAY_LENGTH = 190;
-
+#define JMS_QSE_QSD_HACKS // Hacks to support V10/V11 hardware
 // Customizable definitions for center and fine tune defaults and increments.  Larry K3PTO June 24, 2024
 constexpr uint32_t CENTER_TUNE_DEFAULT = 1000;  // Set to the desired default in the CENTER_TUNE_ARRAY.
 //#define CENTER_TUNE_ARRAY { 500,1000, 10000, 100000, 1000000 }  // The number of elements is not fixed.
