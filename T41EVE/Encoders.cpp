@@ -109,11 +109,13 @@ void EncoderCenterTuneISR() {
   // DIR_CW and DIR_CCW are defined in the Rotary library.
   switch (centerTuneResult) {
     case DIR_CW:  // Turned it clockwise, 16 (0x10)
-      tuneChange = 1;
+ //JMS     tuneChange = 1;
+      tuneChange = -1;
       break;
 
     case DIR_CCW:  // Turned it counter-clockwise, 32 (0x20)
-      tuneChange = -1;
+ //JMS     tuneChange = -1;
+     tuneChange = 1;
       break;
   }
 
@@ -155,11 +157,13 @@ void EncoderVolume()  // AFP 10-22-22  Begin new
   }
   switch (result) {
     case DIR_CW:  // Turned it clockwise, 16
-      adjustVolEncoder = 1;
+ //JMS      adjustVolEncoder = 1;
+      adjustVolEncoder = -1;
       break;
 
     case DIR_CCW:  // Turned it counter-clockwise
-      adjustVolEncoder = -1;
+  //JMS     adjustVolEncoder = -1;
+        adjustVolEncoder = 1;
       break;
   }
 
@@ -283,9 +287,11 @@ void EncoderFineTune() {
     return;
   }
   if (result == DIR_CW) {  // 16 = CW, 32 = CCW
-    fineTuneEncoderMove = 1L;
-  } else {
+  //JMS    fineTuneEncoderMove = 1L;
     fineTuneEncoderMove = -1L;
+  } else {
+  //JMS    fineTuneEncoderMove = -1L;
+     fineTuneEncoderMove = 1L; 
   }
   MS_temp = millis();  // HMB...
 
@@ -357,9 +363,11 @@ void EncoderFineTune() {
     return;
   } else {
     if (result == DIR_CW) {  // 16 = CW, 32 = CCW
-      fineTuneEncoderMove = 1L;
-    } else {
+ //JMS      fineTuneEncoderMove = 1L;
       fineTuneEncoderMove = -1L;
+    } else {
+ //JMS      fineTuneEncoderMove = -1L;
+      fineTuneEncoderMove = 1L;
     }
   }
   NCOFreq = NCOFreq + ConfigData.fineTuneStep * fineTuneEncoderMove;  // Increment NCOFreq per encoder movement.

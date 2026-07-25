@@ -169,7 +169,10 @@ const int FINETUNE_ENCODER_A = 4;
 const int FINETUNE_ENCODER_B = 5;
 const int TUNE_ENCODER_A = 16;
 const int TUNE_ENCODER_B = 17;
+
 */
+#define JMS_ENCODER
+#ifndef JMS_ENCODER
 const int VOLUME_ENCODER_A = 16;
 const int VOLUME_ENCODER_B = 17;
 const int FILTER_ENCODER_A =  5;
@@ -178,7 +181,16 @@ const int FINETUNE_ENCODER_A = 14;
 const int FINETUNE_ENCODER_B = 15;
 const int TUNE_ENCODER_A = 2;
 const int TUNE_ENCODER_B = 3;
-
+#else
+const int VOLUME_ENCODER_A = 2;
+const int VOLUME_ENCODER_B = 3;
+const int FILTER_ENCODER_A = 15;
+const int FILTER_ENCODER_B = 14;
+const int FINETUNE_ENCODER_A = 4;
+const int FINETUNE_ENCODER_B = 5;
+const int TUNE_ENCODER_A = 16;
+const int TUNE_ENCODER_B = 17;
+#endif
 //======================================= Filter Board pins
 const int FILTERPIN80M = 30; // 80M filter relay
 const int FILTERPIN40M = 31; // 40M filter relay
