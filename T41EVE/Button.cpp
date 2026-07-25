@@ -54,7 +54,8 @@ const uint32_t BUTTON_FILTER_SHIFT = 3; // Filter parameter k
 static uint32_t buttonState, buttonADCPressed, buttonElapsed;
 static volatile int buttonADCOut;
 const uint32_t BUTTON_FILTER_SAMPLERATE = 10000; // Hz
-const uint32_t BUTTON_DEBOUNCE_DELAY = 5000;     // uSec
+const uint32_t BUTTON_DEBOUNCE_DELAY = 20000;     // uSec
+//const uint32_t BUTTON_DEBOUNCE_DELAY = 5000;     // uSec
 const uint32_t BUTTON_STATE_UP = 0;
 const uint32_t BUTTON_STATE_DEBOUNCE = 1;
 const uint32_t BUTTON_STATE_PRESSED = 2;
