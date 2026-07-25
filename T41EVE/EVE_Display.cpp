@@ -25,6 +25,10 @@ You should have received a copy of the GNU General Public License along with T41
 
 
 #include "SDT.h"
+#define JMS_FREQ
+#ifdef JMS_FREQ
+void format_commas(int n, char *out);
+#endif
 #if EVE_GEN > 4
 // no changes
 #else // EVE3 doesn't support multiple static areas
@@ -135,6 +139,9 @@ void EVE_Display::drawReceiverScreen(int16_t *fftArray, uint8_t *waterfall, int1
   std::string mode{""};
   std::string sideband{""};
   float CWFilterPosition = 0.0;
+#ifdef JMS_FREQ
+  char freqStringWithCommas[20];
+#endif
 
   // Calculate tuning bar.
   ComputeBandWidthIndicatorBar();
@@ -198,9 +205,17 @@ void EVE_Display::drawReceiverScreen(int16_t *fftArray, uint8_t *waterfall, int1
     {
       EVE_color_rgb_burst(0x0000FF); // Blue
     }
+#ifdef JMS_FREQ
+	format_commas((int)ConfigData.currentFreqA, freqStringWithCommas);
+    EVE_cmd_text_burst(0, 37, 31, 0, freqStringWithCommas);   // x, y, font, options, n
+    EVE_color_rgb_burst(0x7d898b);                                 // VFOB gray color (not active);
+ 	format_commas((int)ConfigData.currentFreqB, freqStringWithCommas);
+    EVE_cmd_text_burst(300, 47, 30, 0, freqStringWithCommas); // VFOB
+#else
     EVE_cmd_number_burst(0, 37, 31, 0, ConfigData.currentFreqA);   // x, y, font, options, n
     EVE_color_rgb_burst(0x7d898b);                                 // VFOB gray color (not active);
     EVE_cmd_number_burst(300, 47, 30, 0, ConfigData.currentFreqB); // VFOB
+#endif
   }
   if (ConfigData.activeVFO == VFO_B)
   {
@@ -212,9 +227,17 @@ void EVE_Display::drawReceiverScreen(int16_t *fftArray, uint8_t *waterfall, int1
     {
       EVE_color_rgb_burst(0x0000FF); // Blue
     }
+#ifdef JMS_FREQ
+	format_commas((int)ConfigData.currentFreqB, freqStringWithCommas);
+    EVE_cmd_text_burst(0, 37, 31, 0, freqStringWithCommas);   // x, y, font, options, n
+    EVE_color_rgb_burst(0x7d898b);                                 // VFOB gray color (not active);
+ 	format_commas((int)ConfigData.currentFreqA, freqStringWithCommas);
+    EVE_cmd_text_burst(300, 47, 30, 0, freqStringWithCommas); // VFOB
+#else
     EVE_cmd_number_burst(300, 37, 31, 0, ConfigData.currentFreqB); // VFOB
     EVE_color_rgb_burst(0x7d898b);                                 // VFOA gray color (not active);
     EVE_cmd_number_burst(0, 47, 30, 0, ConfigData.currentFreqA);   // VFOA
+#endif
   }
 
   // Blue "tuning bar".
@@ -2558,6 +2581,9 @@ void EVE_Display::drawTransmitterScreen()
 {
   std::string mode{""};
   std::string sideband{""};
+#ifdef JMS_FREQ
+  char freqStringWithCommas[20];
+#endif
 
   EVE_start_cmd_burst();
   EVE_cmd_dl_burst(CMD_DLSTART);
@@ -2584,9 +2610,17 @@ void EVE_Display::drawTransmitterScreen()
     {
       EVE_color_rgb_burst(0x0000FF); // Blue
     }
+#ifdef JMS_FREQ
+	format_commas((int)ConfigData.currentFreqA, freqStringWithCommas);
+    EVE_cmd_text_burst(0, 37, 31, 0, freqStringWithCommas);   // x, y, font, options, n
+    EVE_color_rgb_burst(0x7d898b);                                 // VFOB gray color (not active);
+ 	format_commas((int)ConfigData.currentFreqB, freqStringWithCommas);
+    EVE_cmd_text_burst(300, 47, 30, 0, freqStringWithCommas); // VFOB
+#else
     EVE_cmd_number_burst(0, 37, 31, 0, ConfigData.currentFreqA);   // x, y, font, options, n
     EVE_color_rgb_burst(0x7d898b);                                 // VFOB gray color (not active);
     EVE_cmd_number_burst(300, 47, 30, 0, ConfigData.currentFreqB); // VFOB
+#endif
   }
   if (ConfigData.activeVFO == VFO_B)
   {
@@ -2598,9 +2632,17 @@ void EVE_Display::drawTransmitterScreen()
     {
       EVE_color_rgb_burst(0x0000FF); // Blue
     }
+#ifdef JMS_FREQ
+	format_commas((int)ConfigData.currentFreqB, freqStringWithCommas);
+    EVE_cmd_text_burst(0, 37, 31, 0, freqStringWithCommas);   // x, y, font, options, n
+    EVE_color_rgb_burst(0x7d898b);                                 // VFOB gray color (not active);
+ 	format_commas((int)ConfigData.currentFreqA, freqStringWithCommas);
+    EVE_cmd_text_burst(300, 47, 30, 0, freqStringWithCommas); // VFOB
+#else
     EVE_cmd_number_burst(300, 37, 31, 0, ConfigData.currentFreqB); // VFOB
     EVE_color_rgb_burst(0x7d898b);                                 // VFOA gray color (not active);
     EVE_cmd_number_burst(0, 47, 30, 0, ConfigData.currentFreqA);   // VFOA
+#endif
   }
 
   // Compressor status.
@@ -2796,4 +2838,21 @@ EVE_cmd_dl(DL_DISPLAY); // put in the display list to mark its end
 delay(1);
 EVE_cmd_dl(CMD_SWAP); // tell EVE to use the new display list
 while (EVE_busy());
+}
+void format_commas(int n, char *out)
+{
+    int c;
+    char buf[20];
+    char *p;
+
+    sprintf(buf, "%d", n);
+    c = 2 - strlen(buf) % 3;
+    for (p = buf; *p != 0; p++) {
+       *out++ = *p;
+       if (c == 1) {
+           *out++ = '.';// Separator character
+       }
+       c = (c + 1) % 3;
+    }
+    *--out = 0;
 }
