@@ -128,11 +128,6 @@ void RxCalibrate::CalibratePreamble(int setZoom) {
   digitalWrite(RXTX, HIGH);       // Turn on transmitter.
   radioState = RadioState::RECEIVE_CALIBRATE_STATE;
   rawSpectrumPeak = 0;
-#if EVE_GEN > 4
-#else
-  // setup static display data
-  evedisplay.loadStaticScreenData(EVE_Display::Screens::receiveCal);// Setup display static data
-#endif
   SetAudioOperatingState(radioState);  // Do this last!  This clears the queues.
 }
 
@@ -168,11 +163,6 @@ void RxCalibrate::CalibrateEpilogue(bool radioCal, bool saveToEeprom) {
   ADC_RX_I.clear();
   ADC_RX_Q.end();
   ADC_RX_Q.clear();
-#if EVE_GEN > 4
-#else
-  // setup static display data
-  evedisplay.loadStaticScreenData(EVE_Display::Screens::receiver);// Setup display static data
-#endif
   ConfigData.centerFreq = TxRxFreq;
   NCOFreq = 0;
   calibrateFlag = 0;                                       // KF5N
@@ -193,7 +183,6 @@ void RxCalibrate::CalibrateEpilogue(bool radioCal, bool saveToEeprom) {
   ConfigData.spectrum_zoom = userZoomIndex;
   button.ButtonZoom();                      // Restore the user's zoom setting.
   powerUp = true;  // Clip off transient.
-
 }
 
 
